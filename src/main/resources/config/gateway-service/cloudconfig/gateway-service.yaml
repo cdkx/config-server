@@ -1,0 +1,27 @@
+spring:
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+            - id: user-service-route
+              uri: http://localhost:8081
+              predicates:
+                - Path=/user-service/**
+              filters:
+                - RewritePath=/user-service/(?<segment>.*), /user-service/${segment}
+
+            - id: notification-service-route
+              uri: http://localhost:8082
+              predicates:
+                - Path=/notification-service/**
+              filters:
+                - RewritePath=/notification-service/(?<segment>.*), /notification-service/${segment}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
