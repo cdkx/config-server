@@ -1,0 +1,53 @@
+services:
+  postgres:
+    image: postgres:13.3
+    environment:
+      - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - POSTGRES_DB=springRestApp
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - mymicronet
+
+  config-server:
+    image: config-server:0.1
+    networks:
+      - mymicronet
+
+  discovery-service:
+    image: discovery-service:0.1
+    networks:
+      - mymicronet
+    depends_on:
+    - config-server
+
+  gateway-service:
+    image: gateway-service:0.1
+    networks:
+      - mymicronet
+    ports:
+      - 8080:8080
+    depends_on:
+    - discovery-service
+
+  user-service:
+    image: user-service:0.1
+    networks:
+      - mymicronet
+    depends_on:
+      - gateway-service
+      - postgres
+
+  kafka:
+    image: apache/kafka:3.9.1
+    networks:
+      - mymicronet
+    depends_on:
+      - user-service
+
+networks:
+  mymicronet:
+    driver: bridge
+volumes:
+  postgres-data:
